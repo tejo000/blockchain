@@ -46,3 +46,46 @@ class BlockChain:
     @staticmethod
     def is_valid_hash(block_hash):
         return block_hash.startswith('0' * BlockChain.difficulty)
+
+
+def main():
+    # create chain
+    blockchain = BlockChain()
+    print(f'blockchain = {blockchain.__dict__}')
+
+    # create block
+    uid = 1
+    timestamp = time()
+    transactions = ['{"name": "Transaction 1"}']
+    previous_hash = blockchain.last_block().compute_hash()
+    block = Block(uid, timestamp, transactions, previous_hash)
+    print(f'block = {block.__dict__}')
+
+    # create proof of work
+    computed_hash = blockchain.proof_of_work(block)
+    print(f'computed_hash = {computed_hash}')
+
+    # append block
+    blockchain.chain.append(block)
+    print(f'blockchain = {blockchain.__dict__}')
+
+    # verify blockchain
+    last_hash = None
+    for b in blockchain.chain:
+        block_hash = b.compute_hash()
+        if b.uid > 0:
+            if not BlockChain.is_valid_hash(block_hash):
+                raise Exception('Invalid hash')
+            if last_hash != b.previous_hash:
+                raise Exception('Invalid chain')
+        elif b.uid == 0:
+            pass  # genesis block; nothing to do
+        else:
+            raise Exception('Invalid uid')
+        last_hash = block_hash
+
+    print('blockchain is valid')
+
+
+if __name__ == '__main__':
+    main()
